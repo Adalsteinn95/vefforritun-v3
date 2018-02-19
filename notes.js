@@ -1,6 +1,7 @@
 /* todo sækja pakka sem vantar  */
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || 'postgres://postgres:12345@localhost/vefforritun2';
+const { Client } = require('pg');
 
 /**
  * Create a note asynchronously.
@@ -13,7 +14,26 @@ const connectionString = process.env.DATABASE_URL;
  * @returns {Promise} Promise representing the object result of creating the note
  */
 async function create({ title, text, datetime } = {}) {
-  /* todo útfæra */
+
+
+  const client = new Client({ connectionString });
+
+  const query = 'INSERT INTO notes(datetime, title, text) VALUES($1, $2, $3)';
+  const values = [datetime, title, text];
+
+  client.connect();
+
+  try {
+    await client.query(query, values);
+    const note = await { title, text, datetime };
+    return note;
+  } catch (err) {
+    console.error('Error inserting data');
+    throw err;
+  } finally {
+    await client.end();
+  }
+
 }
 
 /**
@@ -22,7 +42,26 @@ async function create({ title, text, datetime } = {}) {
  * @returns {Promise} Promise representing an array of all note objects
  */
 async function readAll() {
-  /* todo útfæra */
+
+
+  const client = new Client({ connectionString });
+
+  const query = 'SELECT * from notes';
+
+  client.connect();
+
+  try {
+    const result = await client.query(query);
+
+    const { rows } = result;
+    return rows;
+  } catch (err) {
+    console.error('Error Selecting data');
+    throw err;
+  } finally {
+    await client.end();
+  }
+
 }
 
 /**
@@ -33,7 +72,13 @@ async function readAll() {
  * @returns {Promise} Promise representing the note object or null if not found
  */
 async function readOne(id) {
-  /* todo útfæra */
+
+
+  const notes = await readAll();
+
+  const filtered = await notes.filter(item => id === item.id);
+
+  return filtered.length ? filtered : null;
 }
 
 /**
@@ -49,6 +94,29 @@ async function readOne(id) {
  */
 async function update(id, { title, text, datetime } = {}) {
   /* todo útfæra */
+
+  const client = new Client({ connectionString });
+
+  const query = 'UPDATE notes SET datetime = $1,title = $2, text = $3 WHERE id = $4';
+  const values = [datetime, title, text, id];
+
+  client.connect();
+
+  try {
+    await client.query(query, values);
+    const note = {
+      id,
+      title,
+      text,
+      datetime,
+    };
+    return note;
+  } catch (err) {
+    console.error('Error inserting data');
+    throw err;
+  } finally {
+    await client.end();
+  }
 }
 
 /**
@@ -60,6 +128,22 @@ async function update(id, { title, text, datetime } = {}) {
  */
 async function del(id) {
   /* todo útfæra */
+  const client = new Client({ connectionString });
+
+  const query = 'DELETE FROM notes WHERE id = $1';
+  const values = [id];
+
+  client.connect();
+
+  try {
+    await client.query(query, values);
+    return '';
+  } catch (err) {
+    console.error('Error inserting data');
+    throw err;
+  } finally {
+    await client.end();
+  }
 }
 
 module.exports = {
