@@ -43,7 +43,6 @@ async function create({ title, text, datetime } = {}) {
  */
 async function readAll() {
 
-
   const client = new Client({ connectionString });
 
   const query = 'SELECT * from notes';
