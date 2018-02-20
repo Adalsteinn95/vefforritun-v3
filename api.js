@@ -5,7 +5,7 @@ const {
   validationResult,
 } = require('express-validator/check');
 const {
-  sanitize
+  sanitize,
 } = require('express-validator/filter');
 
 const {
@@ -33,10 +33,19 @@ const validation = [
   check('datetime')
   .isISO8601()
   .withMessage('Datetime must be ISO 8601 date'),
-  
   check('text'),
   sanitize('title').trim(),
 ];
+
+function getErrors(errors) {
+  const errorMsg = errors.array().map((i) => {
+    return {
+      field: i.param,
+      message: i.msg,
+    };
+  });
+  return errorMsg;
+}
 
 /* todo útfæra api */
 
@@ -54,43 +63,33 @@ async function fetchSingleNote(req, res) {
 }
 
 async function postNote(req, res) {
-
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    const errorMsg = errors.array().map((i) => {
-      return {
-        field: i.param,
-        message: i.msg,
-      };
-    });
+    const errorMsg = getErrors(errors);
 
     res.send(errorMsg);
-  }
+  } else {
+    const finished = await create(req.body);
 
-  const finished = await create(req.body);
-  res.send(finished);
+    const result = await readOne(finished.rows[0].id);
+
+    res.send(result);
+  }
 }
 
 async function updateNote(req, res) {
-
   const dest = parseInt(req.params.data, 10);
 
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    const errorMsg = errors.array().map((i) => {
-      return {
-        field: i.param,
-        message: i.msg,
-      };
-    });
-
+    const errorMsg = getErrors(errors);
     res.send(errorMsg);
+  } else {
+    const finished = await create(req.body);
+    res.send(finished);
   }
-
-  const alter = await update(dest, req.body);
-  res.send(alter);
 }
 
 async function deleteNote(req, res) {

@@ -14,18 +14,15 @@ const { Client } = require('pg');
  * @returns {Promise} Promise representing the object result of creating the note
  */
 async function create({ title, text, datetime } = {}) {
-
-
   const client = new Client({ connectionString });
 
-  const query = 'INSERT INTO notes(datetime, title, text) VALUES($1, $2, $3)';
+  const query = 'INSERT INTO notes(datetime, title, text) VALUES($1, $2, $3) RETURNING id';
   const values = [datetime, title, text];
 
   client.connect();
 
   try {
-    await client.query(query, values);
-    const note = await { title, text, datetime };
+    const note = await client.query(query, values);
     return note;
   } catch (err) {
     console.error('Error inserting data');
@@ -33,7 +30,6 @@ async function create({ title, text, datetime } = {}) {
   } finally {
     await client.end();
   }
-
 }
 
 /**
@@ -42,7 +38,6 @@ async function create({ title, text, datetime } = {}) {
  * @returns {Promise} Promise representing an array of all note objects
  */
 async function readAll() {
-
   const client = new Client({ connectionString });
 
   const query = 'SELECT * from notes';
@@ -60,7 +55,6 @@ async function readAll() {
   } finally {
     await client.end();
   }
-
 }
 
 /**
@@ -71,8 +65,6 @@ async function readAll() {
  * @returns {Promise} Promise representing the note object or null if not found
  */
 async function readOne(id) {
-
-
   const notes = await readAll();
 
   const filtered = await notes.filter(item => id === item.id);
