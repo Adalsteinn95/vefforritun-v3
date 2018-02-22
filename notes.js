@@ -2,6 +2,7 @@
 
 const connectionString = process.env.DATABASE_URL || 'postgres://postgres:12345@localhost/vefforritun2';
 const { Client } = require('pg');
+const xss = require('xss');
 
 /**
  * Create a note asynchronously.
@@ -17,7 +18,7 @@ async function create({ title, text, datetime } = {}) {
   const client = new Client({ connectionString });
 
   const query = 'INSERT INTO notes(datetime, title, text) VALUES($1, $2, $3) RETURNING id';
-  const values = [datetime, title, text];
+  const values = [xss(datetime), xss(title), xss(text)];
 
   client.connect();
 
@@ -25,7 +26,6 @@ async function create({ title, text, datetime } = {}) {
     const note = await client.query(query, values);
     return note;
   } catch (err) {
-    console.error('Error inserting data');
     throw err;
   } finally {
     await client.end();
@@ -88,22 +88,15 @@ async function update(id, { title, text, datetime } = {}) {
 
   const client = new Client({ connectionString });
 
-  const query = 'UPDATE notes SET datetime = $1,title = $2, text = $3 WHERE id = $4';
+  const query = 'UPDATE notes SET datetime = $1,title = $2, text = $3 WHERE id = $4 RETURNING id';
   const values = [datetime, title, text, id];
 
   client.connect();
 
   try {
-    await client.query(query, values);
-    const note = {
-      id,
-      title,
-      text,
-      datetime,
-    };
-    return note;
+    const result = await client.query(query, values);
+    return result;
   } catch (err) {
-    console.error('Error inserting data');
     throw err;
   } finally {
     await client.end();
@@ -130,7 +123,6 @@ async function del(id) {
     await client.query(query, values);
     return '';
   } catch (err) {
-    console.error('Error inserting data');
     throw err;
   } finally {
     await client.end();
