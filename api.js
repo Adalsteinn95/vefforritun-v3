@@ -57,15 +57,21 @@ function getErrors(errors) {
 
 async function fetchNotes(req, res) {
   const notes = await readAll();
-  res.send(notes);
+  res.json(notes);
 }
 
-async function fetchSingleNote(req, res) {
+async function fetchSingleNote(req, res, next) {
   const dest = parseInt(req.params.data, 10);
 
   const result = await readOne(dest);
 
-  res.send(result);
+  console.info(result);
+
+  if(result){
+    res.json(result);
+  } else {
+    next();
+  }
 }
 
 async function postNote(req, res) {
@@ -74,12 +80,12 @@ async function postNote(req, res) {
   if (!errors.isEmpty()) {
     const errorMsg = getErrors(errors);
 
-    res.send(errorMsg);
+    res.json(errorMsg);
   } else {
     const finished = await create(req.body);
     const result = await readOne(finished.rows[0].id);
 
-    res.send(result);
+    res.json(result);
   }
 }
 
@@ -90,12 +96,15 @@ async function updateNote(req, res) {
 
   if (!errors.isEmpty()) {
     const errorMsg = getErrors(errors);
-    res.send(errorMsg);
+    res.json(errorMsg);
   } else {
     const finished = await update(dest, req.body);
 
+    console.info(finished);
+
     const result = await readOne(finished.rows[0].id);
-    res.send(result);
+
+    res.json(result);
   }
 }
 
@@ -104,7 +113,7 @@ async function deleteNote(req, res) {
 
   const finished = await del(dest);
 
-  res.send(finished);
+  res.json(finished);
 }
 
 router.get('/', catchErrors(fetchNotes));

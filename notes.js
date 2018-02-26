@@ -89,7 +89,7 @@ async function update(id, { title, text, datetime } = {}) {
   const client = new Client({ connectionString });
 
   const query = 'UPDATE notes SET datetime = $1,title = $2, text = $3 WHERE id = $4 RETURNING id';
-  const values = [datetime, title, text, id];
+  const values = [xss(datetime), xss(title), xss(text), xss(id)];
 
   client.connect();
 
