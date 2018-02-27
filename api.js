@@ -44,12 +44,7 @@ const validation = [
 ];
 
 function getErrors(errors) {
-  const errorMsg = errors.array().map((i) => {
-    return {
-      field: i.param,
-      message: i.msg,
-    };
-  });
+  const errorMsg = errors.array().map(i => ({ field: i.param, message: i.msg }));
   return errorMsg;
 }
 
@@ -57,6 +52,7 @@ function getErrors(errors) {
 
 async function fetchNotes(req, res) {
   const notes = await readAll();
+
   res.json(notes);
 }
 
@@ -65,10 +61,8 @@ async function fetchSingleNote(req, res, next) {
 
   const result = await readOne(dest);
 
-  console.info(result);
-
-  if(result){
-    res.json(result);
+  if (result) {
+    res.json(result[0]);
   } else {
     next();
   }
@@ -85,11 +79,11 @@ async function postNote(req, res) {
     const finished = await create(req.body);
     const result = await readOne(finished.rows[0].id);
 
-    res.json(result);
+    res.json(result[0]);
   }
 }
 
-async function updateNote(req, res) {
+async function updateNote(req, res, next) {
   const dest = parseInt(req.params.data, 10);
 
   const errors = validationResult(req);
@@ -99,21 +93,25 @@ async function updateNote(req, res) {
     res.json(errorMsg);
   } else {
     const finished = await update(dest, req.body);
-
-    console.info(finished);
-
-    const result = await readOne(finished.rows[0].id);
-
-    res.json(result);
+    if (finished.rows.length !== 0) {
+      const result = await readOne(finished.rows[0].id);
+      res.json(result[0]);
+    } else {
+      next();
+    }
   }
 }
 
-async function deleteNote(req, res) {
+async function deleteNote(req, res, next) {
   const dest = parseInt(req.params.data, 10);
 
   const finished = await del(dest);
 
-  res.json(finished);
+  if (finished) {
+    res.json();
+  } else {
+    res.status(404).json({ error: 'eror' });
+  }
 }
 
 router.get('/', catchErrors(fetchNotes));

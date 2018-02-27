@@ -50,7 +50,6 @@ async function readAll() {
     const { rows } = result;
     return rows;
   } catch (err) {
-    console.error('Error Selecting data');
     throw err;
   } finally {
     await client.end();
@@ -68,7 +67,6 @@ async function readOne(id) {
   const notes = await readAll();
 
   const filtered = await notes.filter(item => id === item.id);
-
   return filtered.length ? filtered : null;
 }
 
@@ -121,7 +119,7 @@ async function del(id) {
 
   try {
     await client.query(query, values);
-    return '';
+    return true;
   } catch (err) {
     throw err;
   } finally {
