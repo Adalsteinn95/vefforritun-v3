@@ -4,6 +4,26 @@ const connectionString = process.env.DATABASE_URL || 'postgres://postgres:12345@
 const { Client } = require('pg');
 const xss = require('xss');
 
+const validator = require('validator');
+
+
+async function errorCatcher(datetime, title, text) {
+  const errors = [];
+
+  if (!validator.isLength(title, { min: 1, max: 255 })) {
+    errors.push({ field: 'title', error: 'Title must be a string of length 1 to 255 characters' });
+  }
+
+  if (typeof text !== 'string') {
+    errors.push({ field: 'text', error: 'Text must be a string' });
+  }
+
+  if (!validator.isISO8601(datetime)) {
+    errors.push({ field: 'datetime', error: 'Datetime must be a ISO 8601 date' });
+  }
+  return errors;
+}
+
 /**
  * Create a note asynchronously.
  *
@@ -20,8 +40,13 @@ async function create({ title, text, datetime } = {}) {
   const query = 'INSERT INTO notes(datetime, title, text) VALUES($1, $2, $3) RETURNING id';
   const values = [xss(datetime), xss(title), xss(text)];
 
-  client.connect();
+  const errors = await errorCatcher(datetime, title, text);
 
+  if (errors.length > 0) {
+    return errors;
+  }
+
+  client.connect();
   try {
     const note = await client.query(query, values);
     return note;
@@ -82,12 +107,15 @@ async function readOne(id) {
  * @returns {Promise} Promise representing the object result of creating the note
  */
 async function update(id, { title, text, datetime } = {}) {
-  /* todo útfæra */
-
   const client = new Client({ connectionString });
 
   const query = 'UPDATE notes SET datetime = $1,title = $2, text = $3 WHERE id = $4 RETURNING id';
   const values = [xss(datetime), xss(title), xss(text), xss(id)];
+
+  const errors = await errorCatcher(datetime, title, text);
+  if (errors.length > 0) {
+    return errors;
+  }
 
   client.connect();
 
