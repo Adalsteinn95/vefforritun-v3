@@ -19,7 +19,7 @@ function catchErrors(fn) {
 async function fetchNotes(req, res) {
   const notes = await readAll();
 
-  res.json(notes);
+  res.status(200).json(notes);
 }
 
 async function fetchSingleNote(req, res, next) {
@@ -28,7 +28,7 @@ async function fetchSingleNote(req, res, next) {
   const result = await readOne(dest);
 
   if (result) {
-    res.json(result[0]);
+    res.status(200).json(result[0]);
   } else {
     next();
   }
@@ -41,7 +41,7 @@ async function postNote(req, res) {
     res.status(400).json(finished);
   } else {
     const result = await readOne(finished.rows[0].id);
-    res.json(result[0]);
+    res.status(201).json(result[0]);
   }
 }
 
@@ -52,7 +52,7 @@ async function updateNote(req, res, next) {
   const finished = await update(dest, req.body);
   if (finished.rows.length !== 0) {
     const result = await readOne(finished.rows[0].id);
-    res.json(result[0]);
+    res.status(200).json(result[0]);
   } else {
     next();
   }
@@ -64,7 +64,7 @@ async function deleteNote(req, res, next) {
   const finished = await del(dest);
 
   if (finished) {
-    res.json();
+    res.status(204).json();
   } else {
     next();
   }

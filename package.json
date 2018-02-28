@@ -6,7 +6,6 @@
   "dependencies": {
     "dotenv": "^5.0.0",
     "express": "^4.16.2",
-    "express-validator": "^5.0.1",
     "pg": "^7.4.1",
     "validator": "^9.4.1",
     "xss": "^0.3.7"

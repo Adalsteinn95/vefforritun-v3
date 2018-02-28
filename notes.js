@@ -140,14 +140,19 @@ async function del(id) {
   /* todo útfæra */
   const client = new Client({ connectionString });
 
-  const query = 'DELETE FROM notes WHERE id = $1';
+  const query = 'DELETE FROM notes WHERE id = $1 RETURNING *';
   const values = [id];
 
   client.connect();
 
   try {
-    await client.query(query, values);
-    return true;
+    const result = await client.query(query, values);
+    if (result.rowCount === 1) {
+      return true;
+    }
+    return false;
+
+
   } catch (err) {
     throw err;
   } finally {
