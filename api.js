@@ -27,10 +27,10 @@ async function fetchSingleNote(req, res, next) {
 
   const result = await readOne(dest);
 
-  if (result) {
-    res.status(200).json(result[0]);
-  } else {
+  if (!result) {
     next();
+  } else {
+    res.status(200).json(result[0]);
   }
 }
 

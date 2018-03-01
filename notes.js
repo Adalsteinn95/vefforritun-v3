@@ -35,7 +35,6 @@ async function errorCatcher(datetime, title, text) {
  * @returns {Promise} Promise representing the object result of creating the note
  */
 async function create({ title, text, datetime } = {}) {
-  const client = new Client({ connectionString });
 
   const query = 'INSERT INTO notes(datetime, title, text) VALUES($1, $2, $3) RETURNING id';
   const values = [xss(datetime), xss(title), xss(text)];
@@ -46,7 +45,8 @@ async function create({ title, text, datetime } = {}) {
     return errors;
   }
 
-  client.connect();
+  const client = new Client({ connectionString });
+  await client.connect();
   try {
     const note = await client.query(query, values);
     return note;
@@ -67,7 +67,7 @@ async function readAll() {
 
   const query = 'SELECT * from notes';
 
-  client.connect();
+  await client.connect();
 
   try {
     const result = await client.query(query);
@@ -117,7 +117,7 @@ async function update(id, { title, text, datetime } = {}) {
     return errors;
   }
 
-  client.connect();
+  await client.connect();
 
   try {
     const result = await client.query(query, values);
@@ -143,7 +143,7 @@ async function del(id) {
   const query = 'DELETE FROM notes WHERE id = $1 RETURNING *';
   const values = [id];
 
-  client.connect();
+  await client.connect();
 
   try {
     const result = await client.query(query, values);
@@ -151,8 +151,6 @@ async function del(id) {
       return true;
     }
     return false;
-
-
   } catch (err) {
     throw err;
   } finally {
