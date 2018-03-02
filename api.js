@@ -58,7 +58,7 @@ async function postNote(req, res) {
   const finished = await create({
     title,
     text,
-    datetime
+    datetime,
   });
 
   if (finished.rows === undefined) {
@@ -80,7 +80,7 @@ async function updateNote(req, res) {
     res.status(200).json(result[0]);
   } else {
     res.status(404).json({
-      error: 'Note not found'
+      error: 'Note not found',
     });
   }
 }
@@ -94,7 +94,7 @@ async function deleteNote(req, res) {
     res.status(204).end();
   } else {
     res.status(404).json({
-      error: 'Note not found'
+      error: 'Note not found',
     });
   }
 }
