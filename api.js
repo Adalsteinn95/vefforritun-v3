@@ -22,13 +22,13 @@ async function fetchNotes(req, res) {
   res.status(200).json(notes);
 }
 
-async function fetchSingleNote(req, res, next) {
+async function fetchSingleNote(req, res) {
   const dest = parseInt(req.params.data, 10);
 
   const result = await readOne(dest);
 
   if (!result) {
-    next();
+    res.status(404).json({ error: 'Note not found' });
   } else {
     res.status(200).json(result[0]);
   }
@@ -45,20 +45,21 @@ async function postNote(req, res) {
   }
 }
 
-async function updateNote(req, res, next) {
+async function updateNote(req, res) {
   const dest = parseInt(req.params.data, 10);
 
 
   const finished = await update(dest, req.body);
-  if (finished.rows.length !== 0) {
+
+  if (finished.rowCount === 1) {
     const result = await readOne(finished.rows[0].id);
     res.status(200).json(result[0]);
   } else {
-    next();
+    res.status(404).json({ error: 'Note not found' });
   }
 }
 
-async function deleteNote(req, res, next) {
+async function deleteNote(req, res) {
   const dest = parseInt(req.params.data, 10);
 
   const finished = await del(dest);
@@ -66,7 +67,7 @@ async function deleteNote(req, res, next) {
   if (finished) {
     res.status(204).json();
   } else {
-    next();
+    res.status(404).json({ error: 'Note not found' });
   }
 }
 
