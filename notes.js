@@ -120,7 +120,10 @@ async function update(id, { title, text, datetime } = {}) {
 
   try {
     const result = await client.query(query, values);
-    return result;
+    if (result.rowCount === 1) {
+      return result;
+    }
+    return false;
   } catch (err) {
     throw err;
   } finally {

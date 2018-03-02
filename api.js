@@ -27,15 +27,39 @@ async function fetchSingleNote(req, res) {
 
   const result = await readOne(dest);
 
+
   if (!result) {
-    res.status(404).json({ error: 'Note not found' });
+    res.status(404).json({
+      error: 'Note not found',
+    });
   } else {
-    res.status(200).json(result[0]);
+    const {
+      id,
+      title,
+      text,
+      datetime,
+    } = result[0];
+    res.status(200).json({
+      id,
+      title,
+      text,
+      datetime,
+    });
   }
 }
 
 async function postNote(req, res) {
-  const finished = await create(req.body);
+  const {
+    title,
+    text,
+    datetime,
+  } = req.body;
+
+  const finished = await create({
+    title,
+    text,
+    datetime
+  });
 
   if (finished.rows === undefined) {
     res.status(400).json(finished);
@@ -51,11 +75,13 @@ async function updateNote(req, res) {
 
   const finished = await update(dest, req.body);
 
-  if (finished.rowCount === 1) {
+  if (finished) {
     const result = await readOne(finished.rows[0].id);
     res.status(200).json(result[0]);
   } else {
-    res.status(404).json({ error: 'Note not found' });
+    res.status(404).json({
+      error: 'Note not found'
+    });
   }
 }
 
@@ -65,9 +91,11 @@ async function deleteNote(req, res) {
   const finished = await del(dest);
 
   if (finished) {
-    res.status(204).json();
+    res.status(204).end();
   } else {
-    res.status(404).json({ error: 'Note not found' });
+    res.status(404).json({
+      error: 'Note not found'
+    });
   }
 }
 
